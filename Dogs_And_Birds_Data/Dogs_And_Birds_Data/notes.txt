@@ -1,0 +1,13 @@
+use spectral clustering on the cleaned adjacency matrix
+fix a performance measures
+    substract outcome matrix from groundtruth matrix
+        square it/count the number of 0's and 1's
+    false positives and negatives
+making cuts is inefficient O(2^n)
+XcTA(e-Xc)
+convex optimization (CVX)
+gradient descent
+
+to do:
+- convert groundtruth to clique matrix
+- 
