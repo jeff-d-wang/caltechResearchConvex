@@ -1,4 +1,4 @@
-structs = load('Dogs3TriangleQuery320workers.mat');
+structs = load('Birds5EdgeQuery300workers.mat');
 
 observed = structs.CAdj;
 
@@ -7,17 +7,21 @@ rawAdj = structs.Adj;
 % entrywise multiplication
 
 Adj = observed .* rawAdj;
+ 
+% for i = 1:473,
+%     for j = i+1:473,
+%         if rawAdj(i, j) == -1,
+%             rawAdj(i, j) = ceil((rand - 2/3));
+%             rawAdj(j, i) = rawAdj(i, j);
+%         end;
+%     end;
+% end;
+% 
+% rawAdj
 
-noloops = Adj - eye(length(Adj));
+[V, D] = eig(Adj);
 
-G = graph(noloops);
+plot(diag(D), '*')
 
-L = laplacian(G);
-
-idx = spectralcluster(L, 3);
-
-groundTruth = structs.groundtruth;
-
-C = confusionmat(groundTruth, idx);
-
-confusionchart(C);
+%2nd number is number of datapoints to that minus # of eigen values it finds
+plot(V(:,300))

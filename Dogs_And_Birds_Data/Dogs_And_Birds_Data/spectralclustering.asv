@@ -1,0 +1,23 @@
+structs = load('Dogs3TriangleQuery320workers.mat');
+
+observed = structs.CAdj;
+
+rawAdj = structs.Adj;
+
+% entrywise multiplication
+
+Adj = observed .* rawAdj;
+
+for i = 1:473,
+    for j = i+1:473,
+        if rawAdj(i, j) == -1,
+            rawAdj(i, j) = ceil((rand - 0.66) * 2);
+            rawAdj(j, i) = rawAdj(i, j);
+        end;
+    end;
+end;
+
+rawAdj
+
+
+
