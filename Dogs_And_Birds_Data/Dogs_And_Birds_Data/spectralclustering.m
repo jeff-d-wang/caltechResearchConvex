@@ -23,16 +23,6 @@ Adj = observed .* rawAdj;
 
 % rawAdj
 
-sparseError = rawAdj;
-
-for i = 1:473,
-    for j = 1:473,
-        if sparseError(i, j) ~= -1
-            sparseError(i, j) = 0;
-        end;
-    end;
-end;
-
 [V, D] = eig(Adj);
 
 %plot(diag(D), '*')
@@ -74,34 +64,59 @@ c = kmeans(M, 3);
 
 %plot(c, '*');
 
-surf(M)
+%surf(M)
 
 %our goal --> minimize the addition of the rank of the matrix and # of
 %non-zero entires in the matrix
 
-nuclearNorm = norm(eig(Adj), 1); %finds low rank matrices, generally trusted
+L = zeros(size(Adj));
+
+c1 = 172;
+c2 = 323;
+c3 = 473;
+
+for i = 1:473
+    for j = 1:473
+        if i <= c1 && j <= c1
+            L(i, j) = 1;
+        elseif (c1 < i && i <= c2) && (c1 < j && j <= c2)
+            L(i, j) = 1;
+        elseif (c2 < i && i <= c3) && (c2 < j && j <= c3)
+            L(i, j) = 1;
+        end
+    end
+end
+
 %nuclearNorm = norm(svd(Adj), 1);
 
-x = Adj(:);
+regParam = 1;
 
-% Generating random sampling points
-T = randperm(numel(Adj));
-IDX = T(1:round(0.4*numel(Adj))); % 40% sampling
+% Do trace of L matrix to get nuclear norm
+% We want a low-ranked matrix
+% Get L hat and do spectral clustering on it
 
-M = opRestriction(numel(Adj), IDX); % Creating operator for selecting entries at the chosen random locations
+n = size(Adj);
 
-y = M(x, 1); % Sampled data
-
-XRec = IST_MC(y,M,sizeX); % Regularized Iterated Soft Thresholding
-result = norm(X-XRec,'fro')/norm(X,'fro'); % Normalized Mean Squared Error
-result
-
-%we want a low-ranked matrix
 cvx_begin
-    minimize(nuclearNorm + norm(sparseError, 1))
+    variable x(n) symmetric;
+    minimize(trace(x) + regParam * sum(sum(abs(Adj - x))))
     subject to
-        
+          x == semidefinite(n);
+%         issymmetric(x) == 1
+%         x >= 0
 cvx_end
+
+imagesc(x)
+
+[V, D] = eig(lHat);
+v1Opt = V(:,473);
+v2Opt = V(:,472);
+v3Opt = V(:,471);
+
+MOpt = [v1Opt v2Opt v3Opt];
+cOpt = kmeans(MOpt, 3);
+
+% plot(cOpt, '*');
 
 %vStack = vertcat(v1, v2, v3);
 %each node is its corresponding row of the new matrix --> rows form feature
